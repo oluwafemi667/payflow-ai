@@ -5,6 +5,26 @@ import type { Invoice } from "@/lib/types";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { InvoiceCard } from "@/components/InvoiceCard";
 
+function ReceiptSkeleton() {
+  return (
+    <div className="receipt rounded-b-md px-6 pt-6 pb-5 animate-pulse">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <div className="h-2.5 w-24 rounded" style={{ background: "var(--color-line)" }} />
+          <div className="h-4 w-32 rounded" style={{ background: "var(--color-line)" }} />
+        </div>
+        <div className="h-4 w-16 rounded" style={{ background: "var(--color-line)" }} />
+      </div>
+      <div className="my-4 border-t border-dashed" style={{ borderColor: "var(--color-line)" }} />
+      <div className="h-3 w-40 rounded" style={{ background: "var(--color-line)" }} />
+      <div className="mt-4 flex items-end justify-between">
+        <div className="h-2.5 w-20 rounded" style={{ background: "var(--color-line)" }} />
+        <div className="h-5 w-24 rounded" style={{ background: "var(--color-line)" }} />
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -64,13 +84,45 @@ export default function DashboardPage() {
         <InvoiceForm onCreated={(inv) => setInvoices((prev) => [inv, ...prev])} />
 
         <div className="space-y-5">
+          {!loaded && (
+            <>
+              <ReceiptSkeleton />
+              <ReceiptSkeleton />
+            </>
+          )}
           {loaded && invoices.length === 0 && (
-            <p className="text-sm text-[var(--color-ink-soft)] font-display italic">
-              No invoices yet — create your first one.
-            </p>
+            <div className="receipt rounded-b-md px-8 py-14 text-center">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                fill="none"
+                className="mx-auto mb-4"
+                style={{ color: "var(--color-line)" }}
+              >
+                <path
+                  d="M10 4h20v30l-3-2-3 2-3-2-3 2-3-2-3 2-2-2V4z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <line x1="14" y1="12" x2="26" y2="12" stroke="currentColor" strokeWidth="1.5" />
+                <line x1="14" y1="17" x2="26" y2="17" stroke="currentColor" strokeWidth="1.5" />
+                <line x1="14" y1="22" x2="20" y2="22" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+              <p className="text-sm text-[var(--color-ink-soft)] font-display italic">
+                No invoices yet — create your first one on the left.
+              </p>
+            </div>
           )}
           {invoices.map((invoice) => (
-            <InvoiceCard key={invoice.id} invoice={invoice} />
+            <InvoiceCard
+              key={invoice.id}
+              invoice={invoice}
+              onUpdated={(updated) =>
+                setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
+              }
+            />
           ))}
         </div>
       </div>

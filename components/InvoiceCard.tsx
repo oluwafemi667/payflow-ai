@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Invoice } from "@/lib/types";
 
 function formatNaira(amount: number) {
@@ -17,7 +20,31 @@ function formatDate(iso: string) {
   });
 }
 
-export function InvoiceCard({ invoice }: { invoice: Invoice }) {
+export function InvoiceCard({
+  invoice,
+  onUpdated,
+}: {
+  invoice: Invoice;
+  onUpdated?: (invoice: Invoice) => void;
+}) {
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+
+  async function handleRetry() {
+    setRetrying(true);
+    setRetryError(null);
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}/retry`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Retry failed");
+      onUpdated?.(json.invoice);
+    } catch (err) {
+      setRetryError(err instanceof Error ? err.message : "Retry failed");
+    } finally {
+      setRetrying(false);
+    }
+  }
+
   return (
     <div className="receipt rounded-b-md px-6 pt-6 pb-5">
       <div className="flex items-start justify-between gap-4">
@@ -58,7 +85,7 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
       </div>
 
       {invoice.status === "pending" && invoice.nomba_checkout_link && (
-        <a
+        
           href={invoice.nomba_checkout_link}
           target="_blank"
           rel="noopener noreferrer"
@@ -67,6 +94,24 @@ export function InvoiceCard({ invoice }: { invoice: Invoice }) {
         >
           Open payment link
         </a>
+      )}
+
+      {invoice.status === "failed" && (
+        <div className="mt-4">
+          <button
+            onClick={handleRetry}
+            disabled={retrying}
+            className="w-full rounded-sm py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            style={{ background: "var(--color-stamp-red)" }}
+          >
+            {retrying ? "Retrying…" : "Retry payment link"}
+          </button>
+          {retryError && (
+            <p className="mt-2 text-xs font-mono" style={{ color: "var(--color-stamp-red)" }}>
+              {retryError}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
