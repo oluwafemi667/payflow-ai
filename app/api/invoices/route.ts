@@ -1,0 +1,85 @@
+import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
+import { supabaseAdmin } from "@/lib/supabase";
+import { createCheckoutOrder } from "@/lib/nomba";
+
+export async function GET() {
+  const db = supabaseAdmin();
+  const { data, error } = await db
+    .from("invoices")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ invoices: data });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { business_name, customer_name, customer_email, description, amount } = body;
+
+  if (!business_name || !customer_name || !customer_email || !description || !amount) {
+    return NextResponse.json(
+      { error: "business_name, customer_name, customer_email, description, and amount are required" },
+      { status: 400 }
+    );
+  }
+  if (typeof amount !== "number" || amount <= 0) {
+    return NextResponse.json({ error: "amount must be a positive number" }, { status: 400 });
+  }
+
+  const db = supabaseAdmin();
+  const orderReference = randomUUID();
+
+  // Insert first as "pending" so we have a record even if the Nomba call
+  // fails partway through — makes the flow debuggable and idempotent.
+  const { data: invoice, error: insertError } = await db
+    .from("invoices")
+    .insert({
+      business_name,
+      customer_name,
+      customer_email,
+      description,
+      amount,
+      status: "pending",
+      nomba_order_reference: orderReference,
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    return NextResponse.json({ error: insertError.message }, { status: 500 });
+  }
+
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+    const { checkoutLink } = await createCheckoutOrder({
+      amount,
+      customerEmail: customer_email,
+      orderReference,
+      callbackUrl: `${appUrl}/invoices/${invoice.id}/callback`,
+      metadata: { invoiceId: invoice.id, businessName: business_name },
+    });
+
+    const { data: updated, error: updateError } = await db
+      .from("invoices")
+      .update({ nomba_checkout_link: checkoutLink })
+      .eq("id", invoice.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ invoice: updated }, { status: 201 });
+  } catch (err) {
+    // Payment link creation failed — mark it so the dashboard can surface
+    // a retry action instead of showing a silently broken invoice.
+    await db.from("invoices").update({ status: "failed" }).eq("id", invoice.id);
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Payment link creation failed: ${message}` }, { status: 502 });
+  }
+}
