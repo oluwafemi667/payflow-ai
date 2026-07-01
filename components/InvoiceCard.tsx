@@ -95,7 +95,6 @@ export function InvoiceCard({
           Open payment link
         </a>
       )}
-
       {invoice.status === "failed" && (
         <div className="mt-4">
           <button
