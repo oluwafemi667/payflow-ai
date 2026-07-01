@@ -84,9 +84,9 @@ export function InvoiceCard({
         <span className="font-mono text-xl font-medium">{formatNaira(invoice.amount)}</span>
       </div>
 
-      {invoice.status === "pending" && invoice.nomba_checkout_link && (
+      {invoice.status === "pending" && invoice.nomba_checkout_link ? (
         
-          href={invoice.nomba_checkout_link}
+          <a href={invoice.nomba_checkout_link}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-4 block text-center rounded-sm py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -94,8 +94,9 @@ export function InvoiceCard({
         >
           Open payment link
         </a>
-      )}
-      {invoice.status === "failed" && (
+      ) : null}
+
+      {invoice.status === "failed" ? (
         <div className="mt-4">
           <button
             onClick={handleRetry}
@@ -105,13 +106,13 @@ export function InvoiceCard({
           >
             {retrying ? "Retrying…" : "Retry payment link"}
           </button>
-          {retryError && (
+          {retryError ? (
             <p className="mt-2 text-xs font-mono" style={{ color: "var(--color-stamp-red)" }}>
               {retryError}
             </p>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
