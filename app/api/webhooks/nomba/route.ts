@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-server";
 import { verifyNombaSignature, type NombaWebhookPayload } from "@/lib/webhook";
 
 export async function POST(req: NextRequest) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { supabaseAdmin } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabase-server";
 import { createCheckoutOrder } from "@/lib/nomba";
 
 export async function POST(
@@ -8,9 +8,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const db = supabaseAdmin();
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { data: invoice, error: fetchError } = await db
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // RLS means this select only ever returns a row if it belongs to the
+  // caller — a mismatched id or someone else's invoice both come back as
+  // "not found" rather than leaking whether the id exists at all.
+  const { data: invoice, error: fetchError } = await supabase
     .from("invoices")
     .select("*")
     .eq("id", id)
@@ -38,7 +48,7 @@ export async function POST(
       metadata: { invoiceId: invoice.id, businessName: invoice.business_name },
     });
 
-    const { data: updated, error: updateError } = await db
+    const { data: updated, error: updateError } = await supabase
       .from("invoices")
       .update({
         status: "pending",

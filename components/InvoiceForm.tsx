@@ -3,8 +3,14 @@
 import { useState, FormEvent } from "react";
 import type { Invoice } from "@/lib/types";
 
-export function InvoiceForm({ onCreated }: { onCreated: (invoice: Invoice) => void }) {
-  const [businessName, setBusinessName] = useState("");
+export function InvoiceForm({
+  defaultBusinessName = "",
+  onCreated,
+}: {
+  defaultBusinessName?: string;
+  onCreated: (invoice: Invoice) => void;
+}) {
+  const [businessName, setBusinessName] = useState(defaultBusinessName);
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [description, setDescription] = useState("");

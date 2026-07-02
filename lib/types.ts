@@ -2,6 +2,7 @@ export type InvoiceStatus = "pending" | "paid" | "failed";
 
 export interface Invoice {
   id: string;
+  user_id: string;
   business_name: string;
   customer_name: string;
   customer_email: string;
