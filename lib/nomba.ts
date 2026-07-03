@@ -77,12 +77,13 @@ export async function createCheckoutOrder(
     headers: {
       "Content-Type": "application/json",
       Authorization: token,
-      // Per Nomba's official spec, this header is "the parent accountId of
-      // the business" for checkout order creation too — not the
-      // sub-account. Using the sub-account here (our earlier mistake) is
-      // likely why real payments weren't being correctly attributed for
-      // webhook dispatch, even though checkout links still worked.
-      accountId: PARENT_ACCOUNT_ID,
+      // Reverted to sub-account here — using the parent account in this
+      // header broke order creation entirely ("Resource not found") for
+      // this sandbox account, even though the docs describe it as the
+      // parent account. The sub-account header is what actually works for
+      // creating orders; the body-level accountId below is the additive
+      // scoping fix an admin pointed us to.
+      accountId: SUB_ACCOUNT_ID,
     },
     body: JSON.stringify({
       order: {
@@ -91,8 +92,10 @@ export async function createCheckoutOrder(
         customerEmail: input.customerEmail,
         amount: input.amount.toFixed(2),
         currency: "NGN",
-        // This is the actual sub-account scoping mechanism: "the account
-        // where the funds will be deposited," per the order schema.
+        // Explicit sub-account scoping on the order itself, per the
+        // documented schema ("the account where funds will be
+        // deposited") and the admin's guidance about scoping transactions
+        // to the sub-account.
         accountId: SUB_ACCOUNT_ID,
         orderMetaData: input.metadata,
       },
