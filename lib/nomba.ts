@@ -23,8 +23,11 @@ let cachedToken: { value: string; expiresAt: number } | null = null;
 
 async function getAccessToken(): Promise<string> {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) {
+    console.log("[nomba auth] using cached token, expires at:", new Date(cachedToken.expiresAt).toISOString());
     return cachedToken.value;
   }
+
+  console.log("[nomba auth] fetching fresh token, accountId header:", PARENT_ACCOUNT_ID);
 
   // Token issuance authenticates against the PARENT account, per Nomba's
   // onboarding instructions — not the sub-account used for scoped calls.
@@ -71,6 +74,7 @@ export async function createCheckoutOrder(
   input: CreateCheckoutOrderInput
 ): Promise<CreateCheckoutOrderResult> {
   const token = await getAccessToken();
+  console.log("[nomba checkout order] using accountId header:", SUB_ACCOUNT_ID, "path:", CHECKOUT_ORDER_PATH);
 
   const res = await fetch(`${BASE_URL}${CHECKOUT_ORDER_PATH}`, {
     method: "POST",
