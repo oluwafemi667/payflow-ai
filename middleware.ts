@@ -28,9 +28,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isAuthRoute = request.nextUrl.pathname.startsWith("/login");
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/");
   const isPublicRoute =
     isAuthRoute ||
-    request.nextUrl.pathname.startsWith("/api/webhooks") ||
+    isApiRoute ||
     request.nextUrl.pathname.startsWith("/invoices/");
 
   if (!user && !isPublicRoute) {
