@@ -3,11 +3,16 @@
 // Handles OAuth2 client-credentials auth (tokens expire after 30 min, so we
 // cache in-memory and refetch when close to expiry) and checkout order
 // creation. Sandbox vs live base URL is controlled by NOMBA_ENV.
+//
+// IMPORTANT: sandbox and live use different paths for checkout order
+// creation — /sandbox/checkout/order vs /v1/checkout/order — even though
+// they share the same sandbox.nomba.com / api.nomba.com base URLs for
+// token issuance. Missing this was likely why webhooks never fired even
+// though checkout links still worked.
 
-const BASE_URL =
-  process.env.NOMBA_ENV === "live"
-    ? "https://api.nomba.com"
-    : "https://sandbox.nomba.com";
+const IS_LIVE = process.env.NOMBA_ENV === "live";
+const BASE_URL = IS_LIVE ? "https://api.nomba.com" : "https://sandbox.nomba.com";
+const CHECKOUT_ORDER_PATH = IS_LIVE ? "/v1/checkout/order" : "/sandbox/checkout/order";
 
 const PARENT_ACCOUNT_ID = process.env.NOMBA_PARENT_ACCOUNT_ID!;
 const SUB_ACCOUNT_ID = process.env.NOMBA_SUB_ACCOUNT_ID!;
@@ -67,7 +72,7 @@ export async function createCheckoutOrder(
 ): Promise<CreateCheckoutOrderResult> {
   const token = await getAccessToken();
 
-  const res = await fetch(`${BASE_URL}/v1/checkout/order`, {
+  const res = await fetch(`${BASE_URL}${CHECKOUT_ORDER_PATH}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -79,7 +84,7 @@ export async function createCheckoutOrder(
         orderReference: input.orderReference,
         callbackUrl: input.callbackUrl,
         customerEmail: input.customerEmail,
-        amount: input.amount,
+        amount: input.amount.toFixed(2),
         currency: "NGN",
         orderMetaData: input.metadata,
       },

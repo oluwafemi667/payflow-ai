@@ -23,20 +23,37 @@ export async function POST(req: NextRequest) {
   console.log("[nomba webhook] received:", JSON.stringify(payload));
 
   if (payload.event_type === "payment_success") {
-    const invoiceId = (payload.data as { orderMetaData?: { invoiceId?: string } })
-      .orderMetaData?.invoiceId;
+    const invoiceId = payload.data.orderMetaData?.invoiceId;
+    const orderReference = payload.data.order?.orderReference;
 
-    console.log("[nomba webhook] event_type=payment_success, invoiceId from metadata:", invoiceId, "requestId:", payload.requestId);
+    console.log(
+      "[nomba webhook] event_type=payment_success, invoiceId:",
+      invoiceId,
+      "orderReference:",
+      orderReference
+    );
 
-    // Fall back to matching on the order reference if metadata isn't
-    // echoed back in the shape we expect — keeps this resilient to minor
-    // payload differences between sandbox and live.
-    const query = invoiceId
-      ? db.from("invoices").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", invoiceId)
-      : db
-          .from("invoices")
-          .update({ status: "paid", paid_at: new Date().toISOString() })
-          .eq("nomba_order_reference", payload.requestId);
+    // Match priority: explicit invoiceId in metadata (most direct), then
+    // the order's orderReference (the value we set at creation time and
+    // stored as nomba_order_reference) — this is the reliable field per
+    // Nomba's documented webhook payload shape. requestId is NOT a safe
+    // match key: it's a random UUID per webhook delivery, unrelated to
+    // the order itself.
+    let query;
+    if (invoiceId) {
+      query = db
+        .from("invoices")
+        .update({ status: "paid", paid_at: new Date().toISOString() })
+        .eq("id", invoiceId);
+    } else if (orderReference) {
+      query = db
+        .from("invoices")
+        .update({ status: "paid", paid_at: new Date().toISOString() })
+        .eq("nomba_order_reference", orderReference);
+    } else {
+      console.log("[nomba webhook] no invoiceId or orderReference found in payload — cannot match an invoice");
+      return NextResponse.json({ received: true, warning: "no matchable reference" });
+    }
 
     const { data: updatedRows, error } = await query.select();
     if (error) {
@@ -50,10 +67,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (payload.event_type === "payment_failed") {
-    const invoiceId = (payload.data as { orderMetaData?: { invoiceId?: string } })
-      .orderMetaData?.invoiceId;
+    const invoiceId = payload.data.orderMetaData?.invoiceId;
+    const orderReference = payload.data.order?.orderReference;
     if (invoiceId) {
       await db.from("invoices").update({ status: "failed" }).eq("id", invoiceId);
+    } else if (orderReference) {
+      await db.from("invoices").update({ status: "failed" }).eq("nomba_order_reference", orderReference);
     }
   }
 
