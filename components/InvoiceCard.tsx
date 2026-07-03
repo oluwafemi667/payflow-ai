@@ -46,7 +46,7 @@ export function InvoiceCard({
   }
 
   return (
-    <div className="receipt rounded-b-md px-6 pt-6 pb-5">
+    <div className="receipt receipt-interactive rounded-b-md px-6 pt-6 pb-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)]">
@@ -89,7 +89,7 @@ export function InvoiceCard({
           href={invoice.nomba_checkout_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 block text-center rounded-sm py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="mt-4 block text-center rounded-sm py-2 text-sm font-medium text-white transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
           style={{ background: "var(--color-teal)" }}
         >
           Open payment link
@@ -101,7 +101,7 @@ export function InvoiceCard({
           <button
             onClick={handleRetry}
             disabled={retrying}
-            className="w-full rounded-sm py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="w-full rounded-sm py-2 text-sm font-medium text-white transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
             style={{ background: "var(--color-stamp-red)" }}
           >
             {retrying ? "Retrying…" : "Retry payment link"}

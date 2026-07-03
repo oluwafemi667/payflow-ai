@@ -15,9 +15,18 @@
 }
 
 body {
-  background: var(--color-paper);
+  background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
+  min-height: 100vh;
+  /* Faint dot-grid, like the underside of receipt paper — adds depth
+     without competing with content. Two layers: a very subtle radial
+     vignette for depth, plus a fine dot texture. */
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(12, 110, 95, 0.04), transparent),
+    radial-gradient(rgba(36, 36, 36, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 18px 18px;
+  background-attachment: fixed;
 }
 
 .font-display {
@@ -36,6 +45,44 @@ body {
   background: #fffefb;
   border: 1px solid var(--color-line);
   box-shadow: 0 1px 2px rgba(36, 36, 36, 0.04), 0 4px 12px rgba(36, 36, 36, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.receipt-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(36, 36, 36, 0.06), 0 10px 24px rgba(36, 36, 36, 0.09);
+}
+
+.stat-card-pending {
+  background: linear-gradient(165deg, rgba(217, 123, 41, 0.07), #fffefb 55%);
+}
+
+.stat-card-paid {
+  background: linear-gradient(165deg, rgba(12, 110, 95, 0.07), #fffefb 55%);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
+  }
+  .receipt-interactive:hover {
+    transform: none;
+  }
 }
 
 .receipt::before {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Invoice } from "@/lib/types";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { InvoiceCard } from "@/components/InvoiceCard";
+import { Logo } from "@/components/Logo";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 function ReceiptSkeleton() {
@@ -75,11 +76,14 @@ export function Dashboard({
   return (
     <main className="max-w-5xl mx-auto px-6 py-12">
       <header className="mb-10 flex items-start justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)]">
-            PayFlow AI
-          </p>
-          <h1 className="font-display text-3xl italic mt-1">Get paid, without the chase.</h1>
+        <div className="flex items-center gap-3">
+          <Logo size={30} />
+          <div>
+            <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)]">
+              PayFlow AI
+            </p>
+            <h1 className="font-display text-3xl italic mt-0.5">Get paid, without the chase.</h1>
+          </div>
         </div>
         <div className="text-right">
           <p className="text-xs text-[var(--color-ink-soft)] font-mono">{userEmail}</p>
@@ -93,15 +97,27 @@ export function Dashboard({
       </header>
 
       <div className="grid grid-cols-2 gap-4 mb-10 max-w-md">
-        <div className="receipt rounded-b-md px-5 py-4">
-          <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Pending</p>
-          <p className="font-mono text-xl mt-1" style={{ color: "var(--color-amber)" }}>
+        <div className="receipt stat-card-pending rounded-b-md px-5 py-4">
+          <div className="flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ color: "var(--color-amber)" }}>
+              <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Pending</p>
+          </div>
+          <p className="font-mono text-2xl mt-1.5" style={{ color: "var(--color-amber)" }}>
             {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(pendingTotal)}
           </p>
         </div>
-        <div className="receipt rounded-b-md px-5 py-4">
-          <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Paid</p>
-          <p className="font-mono text-xl mt-1" style={{ color: "var(--color-teal)" }}>
+        <div className="receipt stat-card-paid rounded-b-md px-5 py-4">
+          <div className="flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ color: "var(--color-teal)" }}>
+              <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M6.5 10.2l2.3 2.3 4.7-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Paid</p>
+          </div>
+          <p className="font-mono text-2xl mt-1.5" style={{ color: "var(--color-teal)" }}>
             {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(paidTotal)}
           </p>
         </div>
@@ -145,14 +161,19 @@ export function Dashboard({
               </p>
             </div>
           )}
-          {invoices.map((invoice) => (
-            <InvoiceCard
+          {invoices.map((invoice, i) => (
+            <div
               key={invoice.id}
-              invoice={invoice}
-              onUpdated={(updated) =>
-                setInvoices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
-              }
-            />
+              className="animate-fade-up"
+              style={{ animationDelay: `${Math.min(i, 6) * 40}ms` }}
+            >
+              <InvoiceCard
+                invoice={invoice}
+                onUpdated={(updated) =>
+                  setInvoices((prev) => prev.map((inv) => (inv.id === updated.id ? updated : inv)))
+                }
+              />
+            </div>
           ))}
         </div>
       </div>

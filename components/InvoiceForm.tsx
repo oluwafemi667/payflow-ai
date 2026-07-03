@@ -112,7 +112,7 @@ export function InvoiceForm({
           type="button"
           onClick={handleParse}
           disabled={parsing || !quickText.trim()}
-          className="w-full rounded-sm py-2 text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-sm py-2 text-sm font-medium transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
           style={{ background: "var(--color-line)", color: "var(--color-ink)" }}
         >
           {parsing ? "Reading that…" : "Fill in details"}
@@ -214,7 +214,7 @@ export function InvoiceForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-sm py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-sm py-2.5 text-sm font-medium text-white transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
           style={{ background: "var(--color-teal)" }}
         >
           {loading ? "Generating payment link…" : "Create invoice"}

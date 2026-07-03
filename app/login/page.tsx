@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,7 +62,8 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)]">
+          <Logo size={36} />
+          <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)] mt-3">
             PayFlow AI
           </p>
           <h1 className="font-display text-2xl italic mt-1">
