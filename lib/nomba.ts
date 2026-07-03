@@ -97,6 +97,7 @@ export async function createCheckoutOrder(
 
   const json = await res.json();
   if (json.code !== "00") {
+    console.log("[nomba checkout order] failed. status:", res.status, "body:", JSON.stringify(json));
     throw new Error(
       `Nomba checkout order failed: ${json.description ?? res.status}`
     );
