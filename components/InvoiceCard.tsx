@@ -45,6 +45,26 @@ export function InvoiceCard({
     }
   }
 
+  const [copied, setCopied] = useState(false);
+
+  function shareUrl() {
+    return `${window.location.origin}/invoices/${invoice.id}/view`;
+  }
+
+  async function handleCopyLink() {
+    await navigator.clipboard.writeText(shareUrl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleEmail() {
+    const subject = encodeURIComponent(`Invoice from ${invoice.business_name}`);
+    const body = encodeURIComponent(
+      `Hi ${invoice.customer_name},\n\nHere's your invoice for ${invoice.description}: ${formatNaira(invoice.amount)}.\n\nView and pay here: ${shareUrl()}\n\nThanks,\n${invoice.business_name}`
+    );
+    window.location.href = `mailto:${invoice.customer_email}?subject=${subject}&body=${body}`;
+  }
+
   return (
     <div className="receipt receipt-interactive rounded-b-md px-6 pt-6 pb-5">
       <div className="flex items-start justify-between gap-4">
@@ -113,6 +133,21 @@ export function InvoiceCard({
           )}
         </div>
       )}
+
+      <div className="mt-3 flex items-center justify-center gap-4">
+        <button
+          onClick={handleCopyLink}
+          className="text-xs underline text-[var(--color-ink-soft)]"
+        >
+          {copied ? "Link copied" : "Copy shareable link"}
+        </button>
+        <button
+          onClick={handleEmail}
+          className="text-xs underline text-[var(--color-ink-soft)]"
+        >
+          Email invoice
+        </button>
+      </div>
     </div>
   );
 }

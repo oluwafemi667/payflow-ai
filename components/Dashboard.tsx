@@ -73,6 +73,20 @@ export function Dashboard({
     .filter((i) => i.status === "paid")
     .reduce((sum, i) => sum + i.amount, 0);
 
+  const now = new Date();
+  const thisMonthTotal = invoices
+    .filter((i) => {
+      const created = new Date(i.created_at);
+      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    })
+    .reduce((sum, i) => sum + i.amount, 0);
+
+  const totalsByCustomer = invoices.reduce<Record<string, number>>((acc, i) => {
+    acc[i.customer_name] = (acc[i.customer_name] ?? 0) + i.amount;
+    return acc;
+  }, {});
+  const topCustomerEntry = Object.entries(totalsByCustomer).sort((a, b) => b[1] - a[1])[0];
+
   return (
     <main className="max-w-5xl mx-auto px-6 py-12">
       <header className="mb-10 flex items-start justify-between">
@@ -122,6 +136,23 @@ export function Dashboard({
           </p>
         </div>
       </div>
+
+      {loaded && invoices.length > 0 && (
+        <div className="flex flex-wrap gap-x-8 gap-y-1 mb-10 text-xs text-[var(--color-ink-soft)] max-w-md">
+          <p>
+            Invoiced this month:{" "}
+            <span className="font-mono text-[var(--color-ink)]">
+              {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(thisMonthTotal)}
+            </span>
+          </p>
+          {topCustomerEntry && (
+            <p>
+              Top customer:{" "}
+              <span className="text-[var(--color-ink)]">{topCustomerEntry[0]}</span>
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid md:grid-cols-[380px_1fr] gap-8">
         <InvoiceForm

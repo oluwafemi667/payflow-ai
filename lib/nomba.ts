@@ -4,15 +4,15 @@
 // cache in-memory and refetch when close to expiry) and checkout order
 // creation. Sandbox vs live base URL is controlled by NOMBA_ENV.
 //
-// IMPORTANT: sandbox and live use different paths for checkout order
-// creation — /sandbox/checkout/order vs /v1/checkout/order — even though
-// they share the same sandbox.nomba.com / api.nomba.com base URLs for
-// token issuance. Missing this was likely why webhooks never fired even
-// though checkout links still worked.
+// NOTE: Nomba's own sandbox-testing docs suggest a separate
+// /sandbox/checkout/order path for sandbox orders, but that produced a
+// 404 in practice. A Nomba team member confirmed directly that
+// /v1/checkout/order is correct for both sandbox and live — trusting that
+// direct confirmation over the docs here.
 
 const IS_LIVE = process.env.NOMBA_ENV === "live";
 const BASE_URL = IS_LIVE ? "https://api.nomba.com" : "https://sandbox.nomba.com";
-const CHECKOUT_ORDER_PATH = IS_LIVE ? "/v1/checkout/order" : "/sandbox/checkout/order";
+const CHECKOUT_ORDER_PATH = "/v1/checkout/order";
 
 const PARENT_ACCOUNT_ID = process.env.NOMBA_PARENT_ACCOUNT_ID!;
 const SUB_ACCOUNT_ID = process.env.NOMBA_SUB_ACCOUNT_ID!;
