@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Invoice } from "@/lib/types";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { InvoiceCard } from "@/components/InvoiceCard";
@@ -101,12 +102,17 @@ export function Dashboard({
         </div>
         <div className="text-right">
           <p className="text-xs text-[var(--color-ink-soft)] font-mono">{userEmail}</p>
-          <button
-            onClick={handleSignOut}
-            className="text-xs underline text-[var(--color-ink-soft)] mt-1"
-          >
-            Sign out
-          </button>
+          <div className="flex items-center gap-3 mt-1 justify-end">
+            <Link href="/history" className="text-xs underline text-[var(--color-ink-soft)]">
+              Transaction history
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="text-xs underline text-[var(--color-ink-soft)]"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
