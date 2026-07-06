@@ -39,12 +39,14 @@ export function Dashboard({
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const refresh = useCallback(async () => {
     const res = await fetch("/api/invoices");
     const json = await res.json();
     if (res.ok) setInvoices(json.invoices);
     setLoaded(true);
+    setNow(Date.now());
   }, []);
 
   useEffect(() => {
@@ -73,12 +75,17 @@ export function Dashboard({
   const paidTotal = invoices
     .filter((i) => i.status === "paid")
     .reduce((sum, i) => sum + i.amount, 0);
+  const overdueCount = invoices.filter((i) => {
+    if (i.status !== "pending") return false;
+    const ageInDays = (now - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24);
+    return ageInDays > 3;
+  }).length;
 
-  const now = new Date();
+  const nowDate = new Date(now);
   const thisMonthTotal = invoices
     .filter((i) => {
       const created = new Date(i.created_at);
-      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+      return created.getMonth() === nowDate.getMonth() && created.getFullYear() === nowDate.getFullYear();
     })
     .reduce((sum, i) => sum + i.amount, 0);
 
@@ -106,6 +113,9 @@ export function Dashboard({
             <Link href="/history" className="text-xs underline text-[var(--color-ink-soft)]">
               Transaction history
             </Link>
+            <Link href="/settings" className="text-xs underline text-[var(--color-ink-soft)]">
+              Settings
+            </Link>
             <button
               onClick={handleSignOut}
               className="text-xs underline text-[var(--color-ink-soft)]"
@@ -118,12 +128,22 @@ export function Dashboard({
 
       <div className="grid grid-cols-2 gap-4 mb-10 max-w-md">
         <div className="receipt stat-card-pending rounded-b-md px-5 py-4">
-          <div className="flex items-center gap-2">
-            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ color: "var(--color-amber)" }}>
-              <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Pending</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ color: "var(--color-amber)" }}>
+                <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10 5.5V10l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <p className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">Pending</p>
+            </div>
+            {overdueCount > 0 && (
+              <span
+                className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded-sm"
+                style={{ background: "var(--color-stamp-red)", color: "white" }}
+              >
+                {overdueCount} overdue
+              </span>
+            )}
           </div>
           <p className="font-mono text-2xl mt-1.5" style={{ color: "var(--color-amber)" }}>
             {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(pendingTotal)}
@@ -206,6 +226,10 @@ export function Dashboard({
             >
               <InvoiceCard
                 invoice={invoice}
+                isOverdue={
+                  invoice.status === "pending" &&
+                  (now - new Date(invoice.created_at).getTime()) / (1000 * 60 * 60 * 24) > 3
+                }
                 onUpdated={(updated) =>
                   setInvoices((prev) => prev.map((inv) => (inv.id === updated.id ? updated : inv)))
                 }

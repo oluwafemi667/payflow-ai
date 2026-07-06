@@ -22,9 +22,11 @@ function formatDate(iso: string) {
 
 export function InvoiceCard({
   invoice,
+  isOverdue = false,
   onUpdated,
 }: {
   invoice: Invoice;
+  isOverdue?: boolean;
   onUpdated?: (invoice: Invoice) => void;
 }) {
   const [retrying, setRetrying] = useState(false);
@@ -66,7 +68,10 @@ export function InvoiceCard({
   }
 
   return (
-    <div className="receipt receipt-interactive rounded-b-md px-6 pt-6 pb-5">
+    <div
+      className="receipt receipt-interactive rounded-b-md px-6 pt-6 pb-5"
+      style={isOverdue ? { borderLeft: "3px solid var(--color-stamp-red)" } : undefined}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-widest text-[var(--color-ink-soft)]">
@@ -83,7 +88,15 @@ export function InvoiceCard({
             FAILED
           </span>
         )}
-        {invoice.status === "pending" && (
+        {invoice.status === "pending" && isOverdue && (
+          <span
+            className="text-sm font-mono font-medium"
+            style={{ color: "var(--color-stamp-red)" }}
+          >
+            OVERDUE
+          </span>
+        )}
+        {invoice.status === "pending" && !isOverdue && (
           <span
             className="text-sm font-mono font-medium"
             style={{ color: "var(--color-amber)" }}
