@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import type { Invoice } from "@/lib/types";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { InvoiceCard } from "@/components/InvoiceCard";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { NavMenu } from "@/components/NavMenu";
+import { RevenueChart } from "@/components/RevenueChart";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 function ReceiptSkeleton() {
@@ -107,22 +109,9 @@ export function Dashboard({
             <h1 className="font-display text-3xl italic mt-0.5">Get paid, without the chase.</h1>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-[var(--color-ink-soft)] font-mono">{userEmail}</p>
-          <div className="flex items-center gap-3 mt-1 justify-end">
-            <Link href="/history" className="text-xs underline text-[var(--color-ink-soft)]">
-              Transaction history
-            </Link>
-            <Link href="/settings" className="text-xs underline text-[var(--color-ink-soft)]">
-              Settings
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="text-xs underline text-[var(--color-ink-soft)]"
-            >
-              Sign out
-            </button>
-          </div>
+        <div className="flex items-start gap-1">
+          <ThemeToggle />
+          <NavMenu userEmail={userEmail} onSignOut={handleSignOut} />
         </div>
       </header>
 
@@ -162,6 +151,8 @@ export function Dashboard({
           </p>
         </div>
       </div>
+
+      {loaded && invoices.length > 0 && <RevenueChart invoices={invoices} />}
 
       {loaded && invoices.length > 0 && (
         <div className="flex flex-wrap gap-x-8 gap-y-1 mb-10 text-xs text-[var(--color-ink-soft)] max-w-md">

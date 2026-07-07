@@ -8,10 +8,22 @@
   --color-amber: #d97b29;
   --color-stamp-red: #b23a2e;
   --color-line: #e4ddd0;
+  --color-card: #fffefb;
 
   --font-display: "Fraunces", serif;
   --font-body: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
+}
+
+[data-theme="dark"] {
+  --color-paper: #1a1917;
+  --color-ink: #f2ede4;
+  --color-ink-soft: #a39c8e;
+  --color-teal: #2bb5a0;
+  --color-amber: #e8964a;
+  --color-stamp-red: #e35c4d;
+  --color-line: #38352f;
+  --color-card: #221f1b;
 }
 
 body {
@@ -23,10 +35,11 @@ body {
      without competing with content. Two layers: a very subtle radial
      vignette for depth, plus a fine dot texture. */
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(12, 110, 95, 0.04), transparent),
-    radial-gradient(rgba(36, 36, 36, 0.05) 1px, transparent 1px);
+    radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in srgb, var(--color-teal) 6%, transparent), transparent),
+    radial-gradient(color-mix(in srgb, var(--color-ink) 8%, transparent) 1px, transparent 1px);
   background-size: 100% 100%, 18px 18px;
   background-attachment: fixed;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .font-display {
@@ -42,23 +55,23 @@ body {
    object sitting on the page rather than a flat UI card. */
 .receipt {
   position: relative;
-  background: #fffefb;
+  background: var(--color-card);
   border: 1px solid var(--color-line);
-  box-shadow: 0 1px 2px rgba(36, 36, 36, 0.04), 0 4px 12px rgba(36, 36, 36, 0.05);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .receipt-interactive:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(36, 36, 36, 0.06), 0 10px 24px rgba(36, 36, 36, 0.09);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 10px 24px rgba(0, 0, 0, 0.14);
 }
 
 .stat-card-pending {
-  background: linear-gradient(165deg, rgba(217, 123, 41, 0.07), #fffefb 55%);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--color-amber) 10%, transparent), var(--color-card) 55%);
 }
 
 .stat-card-paid {
-  background: linear-gradient(165deg, rgba(12, 110, 95, 0.07), #fffefb 55%);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--color-teal) 10%, transparent), var(--color-card) 55%);
 }
 
 @keyframes fade-up {
@@ -92,7 +105,7 @@ body {
   left: 0;
   right: 0;
   height: 8px;
-  background-image: radial-gradient(circle at 8px 0, transparent 6px, #fffefb 6.5px);
+  background-image: radial-gradient(circle at 8px 0, transparent 6px, var(--color-card) 6.5px);
   background-size: 16px 8px;
   background-repeat: repeat-x;
 }

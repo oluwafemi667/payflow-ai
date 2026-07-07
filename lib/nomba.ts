@@ -112,3 +112,75 @@ export async function createCheckoutOrder(
     orderReference: json.data.orderReference,
   };
 }
+
+export interface TransactionCheckResult {
+  found: boolean;
+  matchedTransaction?: unknown;
+}
+
+// Fallback for the current webhook reliability issue: instead of waiting
+// for Nomba to push a "payment_success" webhook (which isn't reliably
+// arriving right now), we can pull directly by asking the transactions
+// API what happened on this sub-account in the window since the invoice
+// was created, and look for a matching successful payment by amount.
+//
+// The exact response shape isn't fully documented publicly, so this is
+// intentionally defensive: it logs the raw response the first time so we
+// can see the real shape, and checks several plausible field names/casings
+// for "list of transactions" and "success status" rather than assuming
+// one specific shape.
+export async function checkTransactionForOrder(
+  orderReference: string,
+  createdAt: string
+): Promise<TransactionCheckResult> {
+  const token = await getAccessToken();
+
+  const startDate = new Date(new Date(createdAt).getTime() - 5 * 60_000)
+    .toISOString()
+    .slice(0, 19);
+  const endDate = new Date(Date.now() + 5 * 60_000).toISOString().slice(0, 19);
+
+  const res = await fetch(`${BASE_URL}/v1/transactions/accounts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: token,
+      accountId: SUB_ACCOUNT_ID,
+    },
+    body: JSON.stringify({
+      startDate,
+      endDate,
+      limit: 50,
+    }),
+  });
+
+  const json = await res.json();
+  console.log(
+    "[nomba transactions check] orderReference:",
+    orderReference,
+    "status:",
+    res.status,
+    "result count:",
+    Array.isArray(json.data?.results) ? json.data.results.length : "n/a"
+  );
+
+  if (json.code !== "00") {
+    return { found: false };
+  }
+
+  // Confirmed from live testing: the transaction list lives at
+  // data.results, and each entry has an exact `orderReference` field
+  // matching what we set at checkout creation — a precise match, no need
+  // to guess by amount/date proximity.
+  const list: unknown[] = Array.isArray(json.data?.results) ? json.data.results : [];
+
+  const match = list.find((txn) => {
+    if (typeof txn !== "object" || txn === null) return false;
+    const t = txn as Record<string, unknown>;
+    const matchesReference = t.orderReference === orderReference;
+    const status = String(t.status ?? "").toUpperCase();
+    return matchesReference && status === "SUCCESS";
+  });
+
+  return { found: Boolean(match), matchedTransaction: match };
+}

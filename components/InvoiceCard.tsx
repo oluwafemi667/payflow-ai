@@ -47,6 +47,29 @@ export function InvoiceCard({
     }
   }
 
+  const [checking, setChecking] = useState(false);
+  const [checkMessage, setCheckMessage] = useState<string | null>(null);
+
+  async function handleCheckStatus() {
+    setChecking(true);
+    setCheckMessage(null);
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}/check-status`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Could not check status");
+
+      if (json.matched) {
+        onUpdated?.(json.invoice);
+      } else {
+        setCheckMessage("No matching payment found yet — try again shortly if you've already paid.");
+      }
+    } catch (err) {
+      setCheckMessage(err instanceof Error ? err.message : "Could not check status");
+    } finally {
+      setChecking(false);
+    }
+  }
+
   const [copied, setCopied] = useState(false);
 
   function shareUrl() {
@@ -118,15 +141,29 @@ export function InvoiceCard({
       </div>
 
       {invoice.status === "pending" && invoice.nomba_checkout_link && (
-        <a
-          href={invoice.nomba_checkout_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 block text-center rounded-sm py-2 text-sm font-medium text-white transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
-          style={{ background: "var(--color-teal)" }}
-        >
-          Open payment link
-        </a>
+        <>
+          <a
+            href={invoice.nomba_checkout_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 block text-center rounded-sm py-2 text-sm font-medium text-white transition hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md"
+            style={{ background: "var(--color-teal)" }}
+          >
+            Open payment link
+          </a>
+          <button
+            onClick={handleCheckStatus}
+            disabled={checking}
+            className="mt-2 w-full text-center text-xs underline text-[var(--color-ink-soft)] disabled:opacity-50"
+          >
+            {checking ? "Checking…" : "Already paid? Check status"}
+          </button>
+          {checkMessage && (
+            <p className="mt-1 text-xs font-mono text-center" style={{ color: "var(--color-ink-soft)" }}>
+              {checkMessage}
+            </p>
+          )}
+        </>
       )}
 
       {invoice.status === "failed" && (

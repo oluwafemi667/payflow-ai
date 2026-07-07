@@ -23,8 +23,9 @@ export async function POST(req: NextRequest) {
   console.log("[nomba webhook] received:", JSON.stringify(payload));
 
   if (payload.event_type === "payment_success") {
-    const invoiceId = payload.data.orderMetaData?.invoiceId;
-    const orderReference = payload.data.order?.orderReference;
+    const invoiceId =
+      payload.data.orderMetaData?.invoiceId ?? payload.data.online_checkout_merchant_meta_invoiceId;
+    const orderReference = payload.data.order?.orderReference ?? payload.data.orderReference;
 
     console.log(
       "[nomba webhook] event_type=payment_success, invoiceId:",
@@ -67,8 +68,9 @@ export async function POST(req: NextRequest) {
   }
 
   if (payload.event_type === "payment_failed") {
-    const invoiceId = payload.data.orderMetaData?.invoiceId;
-    const orderReference = payload.data.order?.orderReference;
+    const invoiceId =
+      payload.data.orderMetaData?.invoiceId ?? payload.data.online_checkout_merchant_meta_invoiceId;
+    const orderReference = payload.data.order?.orderReference ?? payload.data.orderReference;
     if (invoiceId) {
       await db.from("invoices").update({ status: "failed" }).eq("id", invoiceId);
     } else if (orderReference) {

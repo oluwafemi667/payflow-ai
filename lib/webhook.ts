@@ -31,6 +31,13 @@ interface NombaWebhookPayload {
       amount?: number;
     };
     orderMetaData?: { invoiceId?: string };
+    // Confirmed via the transactions API that Nomba flattens checkout
+    // metadata into keys like this, rather than always nesting it —
+    // checking both shapes defensively in case the webhook payload (if it
+    // ever arrives) follows the same flattened pattern as transaction
+    // records do.
+    orderReference?: string;
+    online_checkout_merchant_meta_invoiceId?: string;
     [key: string]: unknown;
   };
 }
