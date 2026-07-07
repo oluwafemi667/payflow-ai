@@ -140,7 +140,7 @@ export function TransactionHistory({ userEmail }: { userEmail: string }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by customer, email, or description"
-          className="flex-1 min-w-[240px] rounded-sm border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-offset-1"
+          className="flex-1 min-w-[240px] rounded-sm border px-3 py-2 text-sm bg-[var(--color-card)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-offset-1"
           style={{ borderColor: "var(--color-line)" }}
         />
         <div className="flex gap-1.5">

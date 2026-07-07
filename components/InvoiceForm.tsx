@@ -89,7 +89,7 @@ export function InvoiceForm({
   }
 
   const inputClass =
-    "w-full rounded-sm border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-offset-1";
+    "w-full rounded-sm border px-3 py-2 text-sm bg-[var(--color-card)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-offset-1";
 
   return (
     <div className="receipt rounded-b-md p-6 space-y-5">
@@ -104,7 +104,7 @@ export function InvoiceForm({
           onChange={(e) => setQuickText(e.target.value)}
           rows={2}
           maxLength={500}
-          className="w-full rounded-sm border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
+          className="w-full rounded-sm border px-3 py-2 text-sm bg-[var(--color-card)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-offset-1 resize-none"
           style={{ borderColor: "var(--color-line)" }}
           placeholder="Invoice Tunde Bello 15k for 2 yards of ankara fabric, tunde@email.com"
         />

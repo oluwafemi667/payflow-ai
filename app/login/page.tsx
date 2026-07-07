@@ -56,7 +56,7 @@ export default function LoginPage() {
   }
 
   const inputClass =
-    "w-full rounded-sm border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-offset-1";
+    "w-full rounded-sm border px-3 py-2 text-sm bg-[var(--color-card)] text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-offset-1";
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
