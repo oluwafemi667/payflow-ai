@@ -1,0 +1,30 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs every 3 days at 09:00 UTC — well under Supabase's 7-day pause threshold
+    - cron: '0 9 */3 * *'
+  workflow_dispatch: {} # lets you manually trigger it from the Actions tab to test
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+
+          echo "Supabase responded with HTTP $response"
+
+          if [ "$response" -ge 200 ] && [ "$response" -lt 500 ]; then
+            echo "Ping successful — project is active."
+          else
+            echo "Unexpected response — check your Supabase project status."
+            exit 1
+          fi
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
